@@ -9,8 +9,8 @@ import statistics
 from PIL import Image
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
-from PyTorch_Models.DTC.code.networks.unet import SmallUNet
-from PyTorch_Models.DTC.code.networks.senformer import SenFormer
+from PyTorch_Models.CPS.code.networks.unet import SmallUNet
+from PyTorch_Models.CPS.code.networks.senformer import SenFormer
 
 from PyTorch_Models.CEECNET.dset import SegmentationDataset
 from PyTorch_Models.CEECNET.ceecnet import XNetSegmentation
@@ -184,7 +184,7 @@ def run_eval(run_id=None):
         train_run = api.run("ohsu-cv/ceecnet/{}".format(HPP_DEFAULT.run_id))
     except Exception:
         train_run = api.run("ohsu-cv/DTC/{}".format(HPP_DEFAULT.run_id))
-        os.chdir("../DTC/code")
+        os.chdir("../CPS/code")
     config = Dotdict(train_run.config)
     print(config)
     # remember what we're evaluating

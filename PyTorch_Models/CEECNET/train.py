@@ -2,9 +2,6 @@ import math
 import os
 import statistics
 import sys
-sys.path.append('..')
-sys.path.append('../..')
-sys.path.append('../../..')
 from pathlib import Path
 
 import wandb
@@ -17,10 +14,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data.distributed import DistributedSampler
 
 from PyTorch_Models.CEECNET.eval import run_eval
-from ceecnet import XNetSegmentation
-from dset import SegmentationDataset
-from loss import MtskLoss
-from utils import Dotdict, wb_mask, detach_to_numpy, dice_coeff, get_smp_model, dice_coef_loss, rand_bbox
+from PyTorch_Models.CEECNET.ceecnet import XNetSegmentation
+from PyTorch_Models.CEECNET.dset import SegmentationDataset
+from PyTorch_Models.CEECNET.loss import MtskLoss
+from PyTorch_Models.CEECNET.utils import Dotdict, wb_mask, detach_to_numpy, dice_coeff, get_smp_model, dice_coef_loss, rand_bbox
 
 HPP_DEFAULT = Dotdict(dict(
     ### MODEL
@@ -59,6 +56,10 @@ HPP_DEFAULT = Dotdict(dict(
     shuffle=True,
     keep_empty_output_prob=0.001,
     ### MISC
+    train_data_path=None,
+    train_masks_path=None,
+    val_data_path=None,
+    val_masks_path=None,
     cutmix=False,
     cutmix_prob=0.5,
     beta=1.0,
@@ -110,20 +111,6 @@ def train(rank, world_size):
     print("Init successful!")
     print("Global rank : {}".format(global_rank))
 
-    img_string = "images" if config.e_name == "PPT" or config.nuclei else "nucleolus_images"
-    msk_string = "nucleus_mask" if config.nuclei else "nucleolus_mask"
-    e_name = config.e_name
-    data_num = config.data_num
-    # if train data num is X_Y val data num will be X_Y+1, eg : train 25_3 -> val 25_4, 25_9 -> 25_1
-    val_data_num = data_num.split("_")[0] + "_" + str((int(data_num.split("_")[-1]) + 1) % 10)
-    val_data_num = val_data_num[:-1] + "1" if val_data_num[-1] == "0" else val_data_num
-    val_data_num = "25_9" if data_num[-1] in ["1", "2", "3", "4", "5"] else "25_1"
-    train_data_path = "/home/groups/graylab_share/OMERO.rdsStore/machired/EM/nuclei_new/data/new_10/" + e_name + "/" + data_num + "/" + img_string + "/1"
-    train_masks_path = "/home/groups/graylab_share/OMERO.rdsStore/machired/EM/nuclei_new/data/new_10/" + e_name + "/" + data_num + "/" + msk_string + "/1"
-    val_data_path = "/home/groups/graylab_share/OMERO.rdsStore/machired/EM/nuclei_new/data/new_10/" + e_name + "/" + val_data_num + "/" + img_string + "/1"
-    val_masks_path = "/home/groups/graylab_share/OMERO.rdsStore/machired/EM/nuclei_new/data/new_10/" + e_name + "/" + val_data_num + "/" + msk_string + "/1"
-    classes_out = ["__background__", nuclei_string]
-
     # random init
     torch.manual_seed(config.seed)
     np.random.seed(config.seed)
@@ -145,8 +132,8 @@ def train(rank, world_size):
     if logging:
         wandb.watch(model, log="None")
 
-    train_dataset = SegmentationDataset(config, train_data_path, train_masks_path, train=True)
-    val_dataset = SegmentationDataset(config, val_data_path, val_masks_path, train=False)
+    train_dataset = SegmentationDataset(config, config.train_data_path, config.train_masks_path, train=True)
+    val_dataset = SegmentationDataset(config, config.val_data_path, config.val_masks_path, train=False)
     # let the sampler handle the shuffling if used
     if config.distributed_training:
         sampler = DistributedSampler(train_dataset, num_replicas=world_size, rank=rank)

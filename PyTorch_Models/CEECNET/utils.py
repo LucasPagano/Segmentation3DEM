@@ -94,6 +94,8 @@ def get_distance(labels):
 def get_smp_model(config):
     if config.model_smp == "Unet":
         model = smp.Unet(
+            encoder_depth=config.encoder_depth,
+            decoder_channels=config.decoder_channels,
             encoder_name=config.encoder_smp,
             encoder_weights=None,
             activation=config.activation_smp,
@@ -103,9 +105,10 @@ def get_smp_model(config):
     elif config.model_smp == "Unet++":
         model = smp.UnetPlusPlus(
             encoder_name=config.encoder_smp,
+            encoder_depth=config.encoder_depth,
             encoder_weights=None,
             activation=config.activation_smp,
-            decoder_channels=[256, 128, 64, 32, 16],
+            decoder_channels=config.decoder_channels,
             in_channels=config.in_channels,
             classes=config.nclasses
         )

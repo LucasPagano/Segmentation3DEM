@@ -7,14 +7,14 @@
 ### e.g. request 2 nodes with 4 gpu each, totally 8 gpus (WORLD_SIZE==8)
 ### Note: --gres=gpu:x should equal to ntasks-per-node
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:v100:4
+#SBATCH --gres=gpu:v100:1
 #SBATCH --ntasks-per-node=4
 #SBATCH --error=jobs/job.%J.err
 #SBATCH --output=jobs/job.%J.out
 ### change 5-digit MASTER_PORT as you wish, slurm will raise Error if duplicated with others
 ### change WORLD_SIZE as gpus/node * num_nodes
 export MASTER_PORT=12355
-export WORLD_SIZE=4
+export WORLD_SIZE=1
 
 ### get the first node name as master address
 echo "NODELIST="${SLURM_NODELIST} 

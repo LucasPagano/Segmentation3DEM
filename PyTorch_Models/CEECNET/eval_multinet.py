@@ -8,7 +8,7 @@ import statistics
 from PIL import Image
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
-from PyTorch_Models.DTC.code.networks.unet import UNet
+from PyTorch_Models.CPS.code.networks.unet import UNet
 
 from dset import SegmentationDataset
 from ceecnet import XNetSegmentation
@@ -125,7 +125,6 @@ def sliding_window(x, model, config):
                                                   mode="bilinear")  # [nb_patches_all, 1, dimensions_input, dimensions_input]
 
 
-
     # average over multiple runs
     if HPP_DEFAULT.get("run_ids") is not None:
         run_ids = HPP_DEFAULT["run_ids"]
@@ -212,7 +211,7 @@ def run_eval(run_id=None):
         train_run = api.run("ohsu-cv/ceecnet/{}".format(HPP_DEFAULT.run_id))
     except Exception:
         train_run = api.run("ohsu-cv/DTC/{}".format(HPP_DEFAULT.run_id))
-        os.chdir("../DTC/code")
+        os.chdir("../CPS/code")
     config = Dotdict(train_run.config)
     print(config)
     # remember what we're evaluating
@@ -259,7 +258,7 @@ def get_model(run_id):
         train_run = api.run("ohsu-cv/ceecnet/{}".format(run_id))
     except Exception:
         train_run = api.run("ohsu-cv/DTC/{}".format(run_id))
-        os.chdir("../DTC/code")
+        os.chdir("../CPS/code")
     config = Dotdict(train_run.config)
     config.verbose=False
     file_name = "model_best_dice.pt" if HPP_DEFAULT.best_model_dice else "model_best_val.pt"
