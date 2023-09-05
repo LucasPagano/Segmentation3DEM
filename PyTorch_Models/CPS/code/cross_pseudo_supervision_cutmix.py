@@ -54,7 +54,7 @@ HPP_DEFAULT = Dotdict(dict(
     train_masks_path="../../../data/101b/10_10/nucleolus_mask/1/",
     val_data_path="../../../data/101b/10_8/nucleolus_images/1/",
     val_masks_path="../../../data/101b/10_8/nucleolus_mask/1/",
-    epochs=250,
+    epochs=500,
     seed=42,
     loss_depth_init=0,
 ))
