@@ -40,7 +40,7 @@ HPP_DEFAULT = Dotdict(dict(
     nclasses=1,
     data_num="10_1",  # {7; 10; 15; 25; 50}_[[0,10]]
     e_name="PPT",  # {101a; 101b; PPT}
-    nb_crop_per_image=64,
+    nb_crop_per_image=10,
     nuclei=True,  # if false, will be nucleoli
     batch_size=20,
     normalize=True,
@@ -52,11 +52,11 @@ HPP_DEFAULT = Dotdict(dict(
     dimensions_input=512,
     keep_empty_output_prob=0.001,
     ### MISC
-    train_data_path=None,
-    train_masks_path=None,
-    val_data_path=None,
-    val_masks_path=None,
-    epochs=500,
+    train_data_path="../../../data/101b/10_10/nucleolus_images/1/",
+    train_masks_path="../../../data/101b/10_10/nucleolus_mask/1/",
+    val_data_path="../../../data/101b/10_8/nucleolus_images/1/",
+    val_masks_path="../../../data/101b/10_8/nucleolus_mask/1/",
+    epochs=250,
     seed=42,
     loss_depth_init=0,
 ))
@@ -69,7 +69,7 @@ def lamdba_scaling(epoch):
         b = HPP_DEFAULT.cps_weight - 20 * m
         return m * epoch + b
     else:
-	return HPP_DEFAULT.cps_weight
+        return HPP_DEFAULT.cps_weight
 
 
 def poly_lr_linear_warmup(base_lr, iter, max_iter):
@@ -77,7 +77,7 @@ def poly_lr_linear_warmup(base_lr, iter, max_iter):
         slope = base_lr / 1500
         lr = slope * iter
     else:
-	lr = base_lr * (1 - iter / max_iter)
+        lr = base_lr * (1 - iter / max_iter)
     return lr
 
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     world_size = 1
     global_rank = 0
     nuclei_string = "nuclei" if HPP_DEFAULT.nuclei else "nucleoli"
-    run = wandb.init(project="DTC", config=HPP_DEFAULT, settings=wandb.Settings(start_method="fork"),
+    run = wandb.init(project="3DSeg_standalone", config=HPP_DEFAULT, settings=wandb.Settings(start_method="fork", _service_wait=300),
                      tags=["SSL", "CutMix", "batch={}".format(world_size * HPP_DEFAULT.batch_size), "n_gpu={}".format(world_size),
                            "downsize={}".format(HPP_DEFAULT.downsize), nuclei_string])
     model_dir = os.path.join("./models", run.id)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     #model2 = SmallUNet(1, 1, HPP_DEFAULT.start_channels).train().to(device)
     model = get_smp_model(HPP_DEFAULT).to(device)
     model2 = get_smp_model(HPP_DEFAULT).to(device)
-
+    classes_out = ("background", "nuclei") if HPP_DEFAULT.nuclei else ("background", "nucleoli")
     d_train = UnsupervisedSegmentationDataset(HPP_DEFAULT, HPP_DEFAULT.train_data_path, HPP_DEFAULT.train_masks_path, train=True)
     d_val = SegmentationDataset(HPP_DEFAULT, HPP_DEFAULT.val_data_path, HPP_DEFAULT.val_masks_path, train=False)
     train_loader = DataLoader(d_train, fake_batch_size, pin_memory=True, shuffle=True)
@@ -167,23 +167,6 @@ if __name__ == "__main__":
             cps2 = losses.dice_loss(logits_cons_stu_2, ps_label_1)
             cps_loss = cps1 + cps2
             cps_loss *= lamdba_scaling(epoch_num)
-
-            # Supervision loss
-            outputs_sup, outputs_sup2 = model(l_batch),  model2(l_batch)
-            loss_dice = losses.dice_loss(outputs_sup.squeeze(), targets.squeeze() == 1)
-            loss_dice2 = losses.dice_loss(outputs_sup2.squeeze(), targets.squeeze() == 1)
-            loss_dice_total = loss_dice + loss_dice2
-            loss = cps_loss + loss_dice_total
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            torch.nn.utils.clip_grad_norm_(model2.parameters(), 1.0)
-
-            optimizer.step()
-            optimizer2.step()
-
-            cps1_.append(cps1.item())
-            cps2_.append(cps2.item())
-            losses_train.append(loss.item())
 
             # Supervision loss
             outputs_sup, outputs_sup2 = model(l_batch),  model2(l_batch)

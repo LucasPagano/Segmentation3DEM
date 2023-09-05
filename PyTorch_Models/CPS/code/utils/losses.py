@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 
 def dice_loss(score, target):
-    nclasses = score.size(1)
+    nclasses = target.size(1) if target.dim() > 3 else 1
     smooth = 1e-5
     if nclasses == 1: # if nclasses = 1
         score, target = score.squeeze(), target.squeeze()

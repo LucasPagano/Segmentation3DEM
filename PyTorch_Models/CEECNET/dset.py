@@ -161,30 +161,33 @@ class UnsupervisedSegmentationDataset(SegmentationDataset):
         super().__init__(config, image_dir, target_dir, train)
         self.__match__supervised__images()
         self.unsupervised_counter = 0
-
+        print(self.image_paths, self.unsupervised_image_paths)
     def __match__supervised__images(self):
         """Iterate over the images dir and pick labeled images based on name convention
-            Naming convention assumed is that the number for the slide is just before the extension,
-             and that other numbers in the file name are separated by a dot eg: A45.Tile3.tif, C089.1.Big_Nucl004.png, ...
+            Naming convention assumed is that the label number is just before the extension,
+             and that other numbers in the file name are separated from the label number eg: A45.60Tile3.tif: label 3, C089.1.Big_Nucl004.png : label 004, ...
         """
         labeled_imgs = []
         labeled_slide_numbers = []
         for path in self.target_paths:
             f_name = os.path.splitext(os.path.basename(path))[0].split(".")[-1]
             number = ""
-            for char in f_name:
+            for char in f_name[::-1]:
                 if char.isdigit():
                     number += char
+                else:
+                    break
             labeled_slide_numbers.append(number)
         for path in self.image_paths:
             f_name = os.path.splitext(os.path.basename(path))[0].split(".")[-1]
             number = ""
-            for char in f_name:
+            for char in f_name[::-1]:
                 if char.isdigit():
                     number += char
+                else:
+                    break
             if number in labeled_slide_numbers:
                 labeled_imgs.append(path)
-
         self.unsupervised_image_paths = [i for i in self.image_paths if i not in labeled_imgs]
         self.image_paths = labeled_imgs
 
