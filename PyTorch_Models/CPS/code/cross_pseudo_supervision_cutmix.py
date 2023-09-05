@@ -38,9 +38,7 @@ HPP_DEFAULT = Dotdict(dict(
     ### DATASET AND DATALOADER
     in_channels=1,
     nclasses=1,
-    data_num="10_1",  # {7; 10; 15; 25; 50}_[[0,10]]
-    e_name="PPT",  # {101a; 101b; PPT}
-    nb_crop_per_image=10,
+    nb_crop_per_image=64,
     nuclei=True,  # if false, will be nucleoli
     batch_size=20,
     normalize=True,
