@@ -20,7 +20,8 @@ pip install -r requirements.txt
 Download your images and masks and split them into training and validation folders (so you end up with 4 different folders). Add these folders in the HPP_DEFAULT dictionary of the training file you use at `train_data_path, train_masks_path, val_data_path, val_masks_path`. \
 The files in the folders will be listed and files with a mask matched together following a naming convention. Naming convention assumed is that the label number is just before the extension, and that other numbers in the file name are separated from the label number eg: \ 
 A45.60Tile3.tif / Label_A45.60Tile_Nuclei3.tif: label 3, \
-C089.1.Big_Nucl004.png / 101bNuclei_labels_004.tif : label 004, ...
+C089.1.Big_Nucl004.png / 101bNuclei_labels_004.tif : label 004, ... \
+Files that do not have a corresponding mask label will be assumed to be unlabeled.
 
 To train fully supervised models, make your hyper-parameter choices and fill in the location of your images and masks folders in the PyTorch_Models/CEECNET/train.py HPP_DEFAULT dictionary. Then run sh run_train.sh in a bash shell with a slurm environment.
 
