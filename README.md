@@ -23,11 +23,22 @@ A45.60Tile3.tif / Label_A45.60Tile_Nuclei3.tif: label 3, \
 C089.1.Big_Nucl004.png / 101bNuclei_labels_004.tif : label 004, ... \
 Files that do not have a corresponding mask label will be assumed to be unlabeled.
 
+#### Training
 To train fully supervised models, make your hyper-parameter choices and fill in the location of your images and masks folders in the PyTorch_Models/CEECNET/train.py HPP_DEFAULT dictionary. Then run sh run_train.sh in a bash shell with a slurm environment.
 
 To train semi-supervised models, make your hyper-parameter choice and fill in the location of your images and masks folders in the PyTorch_Models/CPS/code/[file].py HPP_DEFAULT dictionary corresponding to the technique you want to use (e.g. use train.py for a training close to the original CPS paper, use cross_pseudo_supervision[_cutmix].py for our implementation with the Soft Dice loss. We included the training files of our tests of CPS with Senformer (Bousselham et al. [2021](https://doi.org/10.48550/arXiv.2111.13280)) but we did not include results in the paper as they performed lower than average.
 
-### Train your own models with the Cross Pseudo Supervision framework
+We use W&B to supervise trainings. The default project name is "3DSeg_standalone".
+
+#### Inference
+
+We provide the script infer.py for inference. Parameters are: \
+ID of the wandb training run: `run_id`, \
+Name for output directory in `./Segmentation3DEM/infer/`: `infer_name` (defaults to run id if not provided), \
+Directory to run inference on: `image_dir` (default to run training dir if not provided).
+
+
+#### Train your own models with the Cross Pseudo Supervision framework
 If you want to train your own Pytorch model with the semi-supervised framework, you can simply add the model in a .py file and change 
 ``` 
 model = get_smp_model(HPP_DEFAULT).to(device)
