@@ -237,5 +237,4 @@ if __name__ == "__main__":
         wandb.log(to_log)
     os.chdir("../../CEECNET")
     wandb.finish()
-    run_eval(RUN_ID)
 
