@@ -161,7 +161,6 @@ class UnsupervisedSegmentationDataset(SegmentationDataset):
         super().__init__(config, image_dir, target_dir, train)
         self.__match__supervised__images()
         self.unsupervised_counter = 0
-        print(self.image_paths, self.unsupervised_image_paths)
     def __match__supervised__images(self):
         """Iterate over the images dir and pick labeled images based on name convention
             Naming convention assumed is that the label number is just before the extension,
